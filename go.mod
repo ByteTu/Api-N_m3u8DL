@@ -1,6 +1,6 @@
 module Api_N_m3u8DL
 
-go 1.23
+go 1.20
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect
