@@ -6,13 +6,15 @@
 
 **适合爬虫批量下载或实现自动化下载使用**
 
+**如果对你有帮助请帮忙 Star 一下**
+
 # 下载使用
 
 **发行版:** 
 
-【github】: https://github.com/ByteTu/Api-N_m3u8DL/releases
+【github】 https://github.com/ByteTu/Api-N_m3u8DL/releases
 
-【gitee】: https://gitee.com/ByteTu/Api-N_m3u8DL/releases
+【gitee】 https://gitee.com/ByteTu/Api-N_m3u8DL/releases
 
 **自己编译:**
 ``` 
