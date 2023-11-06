@@ -8,7 +8,11 @@
 
 # 下载使用
 
-**发行版:** https://github.com/ByteTu/Api-N_m3u8DL/releases
+**发行版:** 
+
+【github】: https://github.com/ByteTu/Api-N_m3u8DL/releases
+
+【gitee】: https://gitee.com/ByteTu/Api-N_m3u8DL/releases
 
 **自己编译:**
 ``` 
