@@ -1,4 +1,4 @@
-module Http_N_m3u8DL
+module Api_N_m3u8DL
 
 go 1.23
 
