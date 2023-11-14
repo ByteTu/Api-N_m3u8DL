@@ -10,13 +10,14 @@
 
 # 下载使用
 
-**发行版:** 
+**发行版:**
 
 【github】 https://github.com/ByteTu/Api-N_m3u8DL/releases
 
 【gitee】 https://gitee.com/ByteTu/Api-N_m3u8DL/releases
 
 **自己编译:**
+
 ``` 
 git clone https://github.com/ByteTu/Api-N_m3u8DL.git
 cd Api-N_m3u8DL
@@ -31,10 +32,10 @@ go build -o Api-N_m3u8DL.exe
 
 ## 必传参数
 
-| 参数   | 内容                                   |
-|------|--------------------------------------|
+| 参数 | 内容                                     |
+| ---- | ---------------------------------------- |
 | app  | cli:调用N_m3u8DL-CLI; re:调用N_m3u8DL-RE |
-| must | 视频地址<链接或文件内容>                        |
+| must | m3u8视频url地址(暂不支持其他形式)        |
 
 ## 请求示例
 
@@ -62,11 +63,9 @@ POST http://127.0.0.1:5000/download
 
 **非必传请求参数请根据官方命令行选项进行添加** </br>
 
-**[https://github.com/nilaoda/N_m3u8DL-RE](https://github.com/nilaoda/N_m3u8DL-RE)** </br>
-
-**[https://github.com/nilaoda/N_m3u8DL-CLI](https://github.com/nilaoda/N_m3u8DL-CLI)**
-
 ## N_m3u8DL-CLI 命令行选项
+
+**引用项目:**  **[https://github.com/nilaoda/N_m3u8DL-CLI](https://github.com/nilaoda/N_m3u8DL-CLI)**
 
 ```
 OPTIONS:
@@ -106,6 +105,8 @@ OPTIONS:
 ```
 
 ## N_m3u8DL-RE 命令行选项
+
+**引用项目:** **[https://github.com/nilaoda/N_m3u8DL-RE](https://github.com/nilaoda/N_m3u8DL-RE)** </br>
 
 ```
 Options:

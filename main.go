@@ -31,6 +31,7 @@ func DownloadVideo(c *gin.Context) {
 	jsonStrByte, _ := json.Marshal(requestData)
 	fmt.Println("请求参数--->", string(jsonStrByte))
 	must, _ := requestData["must"].(string)
+	encodedURL := strings.Replace(must, "&", "^&", -1)
 	app, _ := requestData["app"].(string)
 	var exe_path string
 	if app == "cli" {
@@ -59,7 +60,7 @@ func DownloadVideo(c *gin.Context) {
 		}
 	}
 	// 下载终端是否自动退出
-	out_commands := []string{must}
+	out_commands := []string{encodedURL}
 	out_commands = append(out_commands, commands...)
 	auto_exit := viper.GetBool("auto_exit")
 	var cmdArgs []string
