@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>m3u8-web-download</title>
+    <link rel="stylesheet" href="/static/css/m3u8down.css">
+    <script src="/static/js/jquery-3.6.0.min.js" type="text/javascript"></script>
+</head>
+<style>
+    .custom-link {
+        text-decoration: none;
+        color: #0000FF;
+    }
+</style>
+<body>
+<h1><a href="https://github.com/ByteTu/Api-N_m3u8DL" class="custom-link">Api-N_m3u8DL</a></h1>
+
+<form action="/down/url" method="post">
+    <div class="input-group">
+        <label for="must">m3u8视频url地址：</label>
+        <input type="text" id="must" name="must">
+        <span class="required-field">*</span>
+    </div>
+
+    <div class="input-group">
+        <label for="save_dir">保存视频目录：</label>
+        <input type="text" id="save_dir" name="save_dir">
+        <span class="required-field">*</span>
+    </div>
+    <div class="input-group">
+        <label for="save_name">保存视频名称：</label>
+        <input type="text" id="save_name" name="save_name">
+        <span class="required-field">*</span>
+    </div>
+    <div class="input-group">
+        <label for="base_url">BaseURL：</label>
+        <input type="text" id="base_url" name="base_url">
+    </div>
+    <div class="input-group">
+        <label for="max_speed">设置限速如15M 100K：</label>
+        <input type="text" id="max_speed" name="max_speed">
+    </div>
+    <div class="input-group">
+        <label>二进制合并：</label>
+        <input type="radio" id="binary_merge_op1" name="binary_merge" value="False" checked>
+        <label for="binary_merge_op1">不合并</label>
+        <input type="radio" id="binary_merge_op2" name="binary_merge" value="True">
+        <label for="binary_merge_op2">合并</label>
+    </div>
+    <div class="input-group">
+        <label>完成后删除临时文件：</label>
+        <input type="radio" id="del_after_done_op1" name="del-after-done" value="False" checked>
+        <label for="del_after_done_op1">不删除</label>
+        <input type="radio" id="del_after_done_op2" name="del-after-done" value="True">
+        <label for="del_after_done_op2">删除</label>
+    </div>
+    <button type="button" id="load-page-btn" class="submit-btn">提交</button>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $("#load-page-btn").click(function (e) {
+            e.preventDefault();
+            var data = {
+                "must": $("#must").val(),
+                "save-dir": $("#save_dir").val(),
+                "save-name": $("#save_name").val(),
+                "base-url": $("#base_url").val(),
+                "max-speed": parseInt($("#max_speed").val()),
+                "binary-merge": $('input[name="binary_merge"]:checked').val(),
+                "del-after-done": $('input[name="del-after-done"]:checked').val(),
+            };
+            // 移除空字段
+            for (var key in data) {
+                if (data.hasOwnProperty(key) && data[key] === "") {
+                    delete data[key];
+                }
+            }
+            // 验证必填字段
+            if (
+                (!data.hasOwnProperty("must")) || (!data.hasOwnProperty("save-dir")) || (!data.hasOwnProperty("save-name"))
+            ) {
+                alert("请完整填写带*的字段");
+                return;
+            }
+
+            var jsonData = JSON.stringify(data);
+            $.ajax({
+                url: "/download",
+                type: "POST",
+                data: jsonData,
+                processData: false,
+                contentType: "application/json",
+                success: function (data) {
+                    $("#page-container").html(data);
+                    console.log(6666, data)
+                    if (data && data.code === 0) {
+                        // alert(JSON.stringify(data));
+                        alert(data.msg);
+                    } else {
+                        alert("任务添加失败:" + e);
+                    }
+                },
+                error: function () {
+                    alert("请求页面失败，请重试！" + e);
+                },
+            });
+        });
+    });
+</script>
+</body>
+</html>
+

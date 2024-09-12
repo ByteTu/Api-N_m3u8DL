@@ -13,7 +13,7 @@ import (
 
 // Index 首页
 func Index(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"msg": "恭喜你服务启动成功,这是首页!!!"})
+	c.HTML(http.StatusOK, "index.html", nil)
 }
 
 type ReParamsReq struct {
@@ -84,8 +84,7 @@ func DownloadVideo(c *gin.Context) {
 		log.Fatalf("命令启动错误: %s\n", err)
 		return
 	}
-
-	c.JSON(200, gin.H{"code": 0, "msg": "命令已在后台启动，你可以继续执行其他任务。", "console": cmd.String()})
+	c.JSON(200, gin.H{"code": 0, "msg": "任务已在后台启动，请在Logs目录查看下载日志，你可以继续执行其他任务。", "console": cmd.String()})
 	return
 }
 
@@ -108,6 +107,10 @@ func main() {
 	// 启动服务
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*.html")
+	// 设置静态文件目录
+	router.Static("/static", "./static")
+
 	// 设置HTML模板文件目录
 	router.GET("/", Index)
 	router.POST("/download", DownloadVideo)
@@ -119,13 +122,3 @@ func main() {
 		time.Sleep(6 * time.Second)
 	}
 }
-
-// # 设置环境变量
-// export GOOS=linux
-//# 编译程序
-// go build -o Api-N_m3u8DL main.go
-// go build -o Api-N_m3u8DL.exe main.go
-//
-// set CGO_ENABLED=0
-// set GOOS=linux
-// set GOARCH=amd64
