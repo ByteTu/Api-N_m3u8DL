@@ -47,7 +47,7 @@ docker run --restart=always --name api_m3u8dl \
 -p 5050:5050 \
 -v /opt/api_m3u8dl/:/goApp/data \
 -v /opt/api_m3u8dl/Logs/:/goApp/Logs \
--d api_m3u8dl:v2.0
+-d isouu/api_m3u8dl:v2.0
 ``` 
 
 | 说明                  | 配置                   | 
