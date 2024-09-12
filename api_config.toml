@@ -1,7 +1,0 @@
-# 应用路径
-cli_path = "N_m3u8DL-CLI_v3.0.2.exe"
-re_path = "N_m3u8DL-RE_v0.2.0.exe"
-# 控制台 自动关闭 true 手动关闭 false
-auto_exit = true
-# 服务端口
-port = ":5000"
