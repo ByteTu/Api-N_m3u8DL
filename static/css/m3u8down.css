@@ -1,150 +1,152 @@
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f7f7f7;
-            margin: 20px;
-        }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    margin: 20px;
+}
 
-        h1 {
-            text-align: center;
-        }
+h1 {
+    text-align: center;
+}
 
-        .container {
-            margin-bottom: 8px;
-        }
+.container {
+    margin-bottom: 8px;
+}
 
-        .title_status {
-            max-width: 600px;
-            height: 2px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-align: left;
-        }
+.title_status {
+    max-width: 600px;
+    height: 2px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+}
 
 
-        form {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
 
-        label {
-            display: inline-block;
-            width: 180px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+label {
+    display: inline-block;
+    width: 180px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
 
-        input[type="text"],
-        input[type="number"] {
-            width: 300px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
+input[type="text"],
+input[type="number"] {
+    width: 300px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
 
-        input[type="checkbox"] {
-            margin-left: 3px;
-        }
+input[type="checkbox"] {
+    margin-left: 3px;
+}
 
-        input[type="submit"],
-        .submit-btn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #4caf50;
-            color: #fff;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
+input[type="submit"],
+.submit-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
 
-        input[type="submit"]:hover,
-        .submit-btn:hover {
-            background-color: #45a049;
-        }
+input[type="submit"]:hover,
+.submit-btn:hover {
+    background-color: #45a049;
+}
 
-        .header-container {
-            margin-bottom: 10px;
-        }
+.header-container {
+    margin-bottom: 10px;
+}
 
-        .header-input {
-            width: 300px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            margin-bottom: 5px;
-        }
+.header-input {
+    width: 300px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
 
-        .required-field {
-            color: red;
-            margin-left: 5px;
-        }
+.required-field {
+    color: red;
+    margin-left: 5px;
+}
 
-        .add-header-btn,
-        .remove-header-btn {
-            padding: 5px 10px;
-            color: #fff;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
+.add-header-btn,
+.remove-header-btn {
+    padding: 5px 10px;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
 
-        .add-header-btn {
-            background-color: #4caf50;
-        }
+.add-header-btn {
+    background-color: #4caf50;
+}
 
-        .add-header-btn:hover {
-            background-color: #45a049;
-        }
+.add-header-btn:hover {
+    background-color: #45a049;
+}
 
-        .remove-header-btn {
-            background-color: #f44336;
-        }
+.remove-header-btn {
+    background-color: #f44336;
+}
 
-        .remove-header-btn:hover {
-            background-color: #d32f2f;
-        }
+.remove-header-btn:hover {
+    background-color: #d32f2f;
+}
 
-        .input-group {
-            margin-bottom: 10px;
-        }
+.input-group {
+    margin-bottom: 10px;
+}
 
-        .input-wrapper {
-            display: flex;
-            align-items: center;
-        }
+.input-wrapper {
+    display: flex;
+    align-items: center;
+}
 
-        .input-wrapper input {
-            margin-right: 5px;
-        }
+.input-wrapper input {
+    margin-right: 5px;
+}
 
-        .input-wrapper .required-field {
-            color: red;
-        }
+.input-wrapper .required-field {
+    color: red;
+}
 
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
 
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 10px; /* 调整每个 checkbox-group 之间的垂直间距 */
-        }
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    /* 调整每个 checkbox-group 之间的垂直间距 */
+}
 
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            margin-right: 20px; /* 调整复选框之间的水平间距 */
-        }
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    /* 调整复选框之间的水平间距 */
+}
