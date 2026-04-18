@@ -1,116 +1,1383 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>m3u8-web-download</title>
+    <title>Api-N_m3u8DL</title>
     <link rel="stylesheet" href="/static/css/m3u8down.css">
     <script src="/static/js/jquery-3.6.0.min.js" type="text/javascript"></script>
 </head>
-<style>
-    .custom-link {
-        text-decoration: none;
-        color: #0000FF;
-    }
-</style>
 
 <body>
-    <h1><a href="https://github.com/ByteTu/Api-N_m3u8DL" class="custom-link">Api-N_m3u8DL</a></h1>
+    <!-- Top Bar -->
+    <header class="top-bar">
+        <div class="top-bar-inner">
+            <div class="brand">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <defs>
+                        <linearGradient id="brandGrad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#4f46e5"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="28" height="28" rx="8" fill="url(#brandGrad)"/>
+                    <path d="M8 10l6 4-6 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 18h4" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <div class="brand-text">
+                    <span class="brand-name">Api-N_m3u8DL</span>
+                    <span class="brand-sub">Web Manager</span>
+                </div>
+            </div>
+            <div class="top-right">
+                <button id="api-doc-btn" class="doc-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    API 文档
+                </button>
+                <button id="log-viewer-btn" class="doc-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    日志文件
+                </button>
+                <button id="videos-btn" class="doc-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    已下载
+                </button>
+                <a href="https://github.com/ByteTu/Api-N_m3u8DL" target="_blank" class="github-version">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span id="version-badge" class="version-badge">v2.0</span>
+                </a>
+                <div class="server-badge">
+                    <span class="dot"></span>
+                    <span>服务正常</span>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <form action="/down/url" method="post">
-        <div class="input-group">
-            <label for="must">m3u8视频url地址：</label>
-            <input type="text" id="must" name="must">
-            <span class="required-field">*</span>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Left Column: Form -->
+        <div class="col-form">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        新建下载任务
+                    </div>
+                    <button type="button" id="submit-btn" class="btn-primary btn-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        开始下载
+                    </button>
+                </div>
+                <div class="card-body">
+
+                    <!-- 基础信息 -->
+                    <div class="base-info-card">
+                        <div class="base-info-header">
+                            <div class="base-info-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                基础信息
+                                <span class="req-tag">必填</span>
+                            </div>
+                        </div>
+                        <div class="base-info-body">
+                            <div class="field">
+                                <label class="field-label">m3u8 地址 <span class="req">*</span></label>
+                                <input type="text" id="must" class="field-input" placeholder="https://example.com/video.m3u8">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">保存目录 <span class="req">*</span></label>
+                                <input type="text" id="save_dir" class="field-input" placeholder="在项目/data/videos/创建目录" value="">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">视频名称 <span class="req">*</span></label>
+                                <input type="text" id="save_name" class="field-input" placeholder="output.mp4">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">BaseURL</label>
+                                <input type="text" id="base_url" class="field-input" placeholder="相对路径拼接">
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">二进制合并</span>
+                                <label class="switch"><input type="checkbox" id="binary_merge"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">完成后删除临时文件</span>
+                                <label class="switch"><input type="checkbox" id="del_after_done" checked><span class="slider"></span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 网络 & 线程 -->
+                    <div class="form-section">
+                        <div class="section-label toggleable" onclick="toggleSection(this)">
+                            <span>网络 &amp; 线程</span>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="section-body">
+                            <div class="field">
+                                <label class="field-label">限速</label>
+                                <input type="text" id="max_speed" class="field-input" placeholder="如 15M / 100K">
+                            </div>
+                            <div class="field-row-2">
+                                <div class="field">
+                                    <label class="field-label">下载线程数</label>
+                                    <input type="number" id="thread_count" class="field-input" placeholder="默认 CPU 线程数">
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">HTTP 超时(秒)</label>
+                                    <input type="number" id="http_timeout" class="field-input" placeholder="默认 100">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="field-label">自定义代理</label>
+                                <input type="text" id="custom_proxy" class="field-input" placeholder="http://127.0.0.1:8888">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">重试次数</label>
+                                <input type="number" id="download_retry" class="field-input" placeholder="默认 3">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">自定义请求头</label>
+                                <input type="text" id="header" class="field-input" placeholder='-H "Cookie: xxx" -H "User-Agent: iOS"'>
+                            </div>
+                            <div class="field">
+                                <label class="field-label">下载分片范围</label>
+                                <input type="text" id="custom_range" class="field-input" placeholder="如 bytes=0-1000000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 流选择 -->
+                    <div class="form-section">
+                        <div class="section-label toggleable" onclick="toggleSection(this)">
+                            <span>流选择</span>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="section-body">
+                            <div class="toggle-row">
+                                <span class="toggle-label">自动选择最佳轨道</span>
+                                <label class="switch"><input type="checkbox" id="auto_select"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">并发下载音视频字幕</span>
+                                <label class="switch"><input type="checkbox" id="concurrent_download"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">仅下载字幕</span>
+                                <label class="switch"><input type="checkbox" id="sub_only"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">追加 URL 参数到分片</span>
+                                <label class="switch"><input type="checkbox" id="append_url_params"><span class="slider"></span></label>
+                            </div>
+                            <div class="field-row-2" style="margin-top:8px">
+                                <div class="field">
+                                    <label class="field-label">选择视频流(正则)</label>
+                                    <input type="text" id="select_video" class="field-input" placeholder="如 .*1080.*">
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">选择音频流(正则)</label>
+                                    <input type="text" id="select_audio" class="field-input" placeholder="如 .*128kbps.*">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="field-label">选择字幕流(正则)</label>
+                                <input type="text" id="select_subtitle" class="field-input" placeholder="如 .*zh.*">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">字幕格式</label>
+                                <select id="sub_format" class="field-input">
+                                    <option value="">默认 (SRT)</option>
+                                    <option value="SRT">SRT</option>
+                                    <option value="VTT">VTT</option>
+                                </select>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">自动修正字幕</span>
+                                <label class="switch"><input type="checkbox" id="auto_subtitle_fix" checked><span class="slider"></span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 合并 & 输出 -->
+                    <div class="form-section">
+                        <div class="section-label toggleable" onclick="toggleSection(this)">
+                            <span>合并 &amp; 输出</span>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="section-body">
+                            <div class="toggle-row">
+                                <span class="toggle-label">使用 ffmpeg concat demuxer</span>
+                                <label class="switch"><input type="checkbox" id="use_ffmpeg_concat_demuxer"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">混流时不写入日期信息</span>
+                                <label class="switch"><input type="checkbox" id="no_date_info"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">输出 meta JSON 文件</span>
+                                <label class="switch"><input type="checkbox" id="write_meta_json" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">去除 ANSI 颜色</span>
+                                <label class="switch"><input type="checkbox" id="no_ansi_color"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">跳过合并 (仅下载分片)</span>
+                                <label class="switch"><input type="checkbox" id="skip_merge"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">跳过下载 (仅探测信息)</span>
+                                <label class="switch"><input type="checkbox" id="skip_download"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">检测分片数量一致性</span>
+                                <label class="switch"><input type="checkbox" id="check_segments_count" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="field" style="margin-top:8px">
+                                <label class="field-label">ffmpeg 程序路径</label>
+                                <input type="text" id="ffmpeg_binary_path" class="field-input" placeholder="留空使用系统 PATH 中的 ffmpeg">
+                            </div>
+                            <div class="field">
+                                <label class="field-label">日志文件路径</label>
+                                <input type="text" id="log_file_path" class="field-input" placeholder="如 Logs/log.txt">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 其他 -->
+                    <div class="form-section">
+                        <div class="section-label toggleable" onclick="toggleSection(this)">
+                            <span>其他</span>
+                            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="section-body">
+                            <div class="field-row-2">
+                                <div class="field">
+                                    <label class="field-label">UI 语言</label>
+                                    <select id="ui_language" class="field-input">
+                                        <option value="">默认</option>
+                                        <option value="zh-CN">简体中文</option>
+                                        <option value="zh-TW">繁体中文</option>
+                                        <option value="en-US">English</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label class="field-label">日志级别</label>
+                                    <select id="log_level" class="field-input">
+                                        <option value="">默认 INFO</option>
+                                        <option value="DEBUG">DEBUG</option>
+                                        <option value="INFO">INFO</option>
+                                        <option value="WARN">WARN</option>
+                                        <option value="ERROR">ERROR</option>
+                                        <option value="OFF">OFF</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">禁用版本更新检测</span>
+                                <label class="switch"><input type="checkbox" id="disable_update"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span class="toggle-label">关闭日志文件输出</span>
+                                <label class="switch"><input type="checkbox" id="no_log"><span class="slider"></span></label>
+                            </div>
+                            <div class="field">
+                                <label class="field-label">任务开始时间</label>
+                                <input type="text" id="task_start_at" class="field-input" placeholder="格式: 20241201123000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        任务列表
+                    </div>
+                    <div class="task-filter-tabs">
+                        <button class="task-tab active" data-filter="active">进行中</button>
+                        <button class="task-tab" data-filter="all">全部</button>
+                        <button class="task-verify-btn" id="task-verify-btn" title="手动验证任务状态">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            验证
+                        </button>
+                        <button class="task-clear-btn" id="task-clear-done-btn" title="清空已完成的任务记录">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            清空已完成
+                        </button>
+                    </div>
+                </div>
+                <div class="task-list" id="task-list">
+                    <div class="task-empty">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        <p>暂无下载任务</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="input-group">
-            <label for="save_dir">保存视频目录：</label>
-            <input type="text" id="save_dir" name="save_dir">
-            <span class="required-field">*</span>
+        <!-- Right Column: Log -->
+        <div class="col-log">
+            <div class="card card-log">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        实时日志
+                        <span id="log-task-name" class="log-title-name"></span>
+                    </div>
+                    <div class="log-actions">
+                        <label class="auto-scroll-label">
+                            <input type="checkbox" id="auto-scroll" checked>
+                            <span>自动滚动</span>
+                        </label>
+                        <button class="btn-icon" id="clear-log-btn" title="清空">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="log-body" id="log-content">
+                    <div class="log-empty">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <p>等待下载任务...</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="input-group">
-            <label for="save_name">保存视频名称：</label>
-            <input type="text" id="save_name" name="save_name">
-            <span class="required-field">*</span>
-        </div>
-        <div class="input-group">
-            <label for="base_url">BaseURL：</label>
-            <input type="text" id="base_url" name="base_url">
-        </div>
-        <div class="input-group">
-            <label for="max_speed">设置限速如15M 100K：</label>
-            <input type="text" id="max_speed" name="max_speed">
-        </div>
-        <div class="input-group">
-            <label>二进制合并：</label>
-            <input type="radio" id="binary_merge_op1" name="binary_merge" value="False" checked>
-            <label for="binary_merge_op1">不合并</label>
-            <input type="radio" id="binary_merge_op2" name="binary_merge" value="True">
-            <label for="binary_merge_op2">合并</label>
-        </div>
-        <div class="input-group">
-            <label>完成后删除临时文件：</label>
-            <input type="radio" id="del_after_done_op1" name="del-after-done" value="False" checked>
-            <label for="del_after_done_op1">不删除</label>
-            <input type="radio" id="del_after_done_op2" name="del-after-done" value="True">
-            <label for="del_after_done_op2">删除</label>
-        </div>
-        <button type="button" id="load-page-btn" class="submit-btn">提交</button>
-    </form>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toast-container"></div>
 
     <script>
-        $(document).ready(function () {
-            $("#load-page-btn").click(function (e) {
-                e.preventDefault();
-                var data = {
-                    "must": $("#must").val(),
-                    "save-dir": $("#save_dir").val(),
-                    "save-name": $("#save_name").val(),
-                    "base-url": $("#base_url").val(),
-                    "max-speed": parseInt($("#max_speed").val()),
-                    "binary-merge": $('input[name="binary_merge"]:checked').val(),
-                    "del-after-done": $('input[name="del-after-done"]:checked').val(),
-                };
-                // 移除空字段
-                for (var key in data) {
-                    if (data.hasOwnProperty(key) && data[key] === "") {
-                        delete data[key];
+        var activeTasks = {};
+        var logPollTimer = null;
+        var currentLogTaskId = null; // 当前日志面板显示的任务 ID
+        var currentLogFile = '';
+        var currentLogFilter = 0; // 日志文件筛选：0=全部
+
+        // 关闭所有弹窗（顶层作用域，供其他函数调用）
+        function closeAllModals() {
+            $('#api-doc-modal, #api-doc-overlay').hide();
+            $('#log-viewer-modal, #log-viewer-overlay').hide();
+            $('#videos-modal, #videos-overlay').hide();
+        }
+
+        function fmtTime() {
+            var d = new Date();
+            return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2) + '.' + ('00' + d.getMilliseconds()).slice(-3);
+        }
+
+        function escHtml(s) {
+            if (!s) return '';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function appendLog(msg, level) {
+            level = level || 'info';
+            var $c = $('#log-content');
+            $c.find('.log-empty').remove();
+            var $el = $('<div class="log-line" data-level="' + level + '"></div>');
+            $el.html('<span class="log-t">[' + fmtTime() + ']</span><span class="log-l">[' + level.toUpperCase() + ']</span>' + escHtml(msg));
+            $c.append($el);
+            if ($('#auto-scroll').is(':checked')) {
+                $c.scrollTop($c[0].scrollHeight);
+            }
+        }
+
+        function clearLogs() {
+            currentLogTaskId = null;
+            $('#log-task-name').text('');
+            $('#log-content').html('<div class="log-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>等待下载任务...</p></div>');
+        }
+
+        // 切换到指定任务的日志
+        function switchToTaskLog(taskId) {
+            if (!taskId) return;
+            currentLogTaskId = taskId;
+            $('#log-content').html('');
+            $('#auto-scroll').prop('checked', true);
+            // 更新标题任务名
+            var name = activeTasks[taskId] ? activeTasks[taskId].name : '';
+            $('#log-task-name').text(name ? ' - ' + name : '');
+            // 高亮选中任务
+            $('.task-item').removeClass('active');
+            $('#task-' + taskId).addClass('active');
+            // 获取已有日志
+            $.ajax({
+                url: '/task-logs', type: 'GET', data: { taskId: taskId, offset: 0 },
+                success: function (res) {
+                    if (res.code !== 0) return;
+                    if (res.logs && res.logs.length > 0) {
+                        res.logs.forEach(function (line) {
+                            var lvl = line.indexOf('[ERR]') === 0 ? 'error' : 'download';
+                            appendLog(line, lvl);
+                        });
+                    }
+                    if (activeTasks[taskId]) {
+                        activeTasks[taskId].offset = res.total || 0;
                     }
                 }
-                // 验证必填字段
-                if (
-                    (!data.hasOwnProperty("must")) || (!data.hasOwnProperty("save-dir")) || (!data.hasOwnProperty("save-name"))
-                ) {
-                    alert("请完整填写带*的字段");
+            });
+        }
+
+        function showToast(msg, type) {
+            type = type || 'info';
+            var $t = $('<div class="toast toast-' + type + '">' + escHtml(msg) + '</div>');
+            $('#toast-container').append($t);
+            setTimeout(function () { $t.fadeOut(300, function () { $(this).remove(); }); }, 3500);
+        }
+
+        function stopTask(taskId) {
+            if (!confirm('确定要终止该任务吗？')) return;
+            $.ajax({
+                url: '/task-stop', type: 'POST', data: { taskId: taskId },
+                success: function (res) {
+                    if (res.code === 0) {
+                        showToast(res.msg || '任务已终止', 'info');
+                        if (activeTasks[taskId]) {
+                            appendLog('任务已终止: ' + (activeTasks[taskId].name || ''), 'error');
+                        }
+                        delete activeTasks[taskId];
+                        renderTaskList();
+                        if (currentLogTaskId == taskId) clearLogs();
+                    } else {
+                        showToast(res.msg || '终止失败', 'error');
+                    }
+                },
+                error: function () { showToast('终止请求失败', 'error'); }
+            });
+        }
+
+        var currentTaskFilter = 'active'; // 'active' or 'all'
+
+        function renderTaskList() {
+            var $list = $('#task-list');
+
+            if (currentTaskFilter === 'all') {
+                // 全部模式：从后端获取历史
+                $list.html('<div class="task-empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p>加载中...</p></div>');
+                $.ajax({
+                    url: '/api/task-history',
+                    type: 'GET',
+                    dataType: 'json',
+                    cache: false,
+                    success: function(res) {
+                        if (res.code === 0 && res.tasks && res.tasks.length > 0) {
+                            var html = '';
+                            res.tasks.forEach(function(t) {
+                                var isCurrentActive = activeTasks[t.taskId] && activeTasks[t.taskId].running;
+                                var actionsHtml = '';
+                                if (isCurrentActive) {
+                                    actionsHtml += '<button class="task-action-btn btn-stop" data-action="stop" data-task-id="' + t.taskId + '" title="终止"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg></button>';
+                                } else if (t.statusClass === 'failed' || t.statusClass === 'stopped') {
+                                    // 失败/终止的任务可以重新发起
+                                    actionsHtml += '<button class="task-action-btn btn-retry" data-action="retry" data-raw-params="' + escHtml(t.rawParams || '') + '" title="重新发起"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 9a9 9 0 1 0-2.12 6.56"/></svg></button>';
+                                }
+                                // 进行中的任务显示 spinner
+                                var statusDisplay = t.statusLabel;
+                                if (t.statusClass === 'running') {
+                                    statusDisplay = '<span class="spinner"></span>' + t.statusLabel;
+                                }
+                                var logFileAttr = t.logFile ? (' data-log-file="' + escHtml(t.logFile) + '"') : '';
+                                html += '<div class="task-item' + (t.taskId == currentLogTaskId ? ' active' : '') + '" id="task-' + t.taskId + '" data-task-id="' + t.taskId + '"' + logFileAttr + '>';
+                                html += '<div class="task-info"><div class="task-name">' + escHtml(t.name) + '</div><div class="task-meta">' + t.startTime + '</div></div>';
+                                html += '<div class="task-item-right">';
+                                html += '<div class="task-status ' + t.statusClass + '">' + statusDisplay + '</div>';
+                                html += actionsHtml;
+                                html += '</div></div>';
+                            });
+                            $list.html(html);
+                            bindTaskListEvents();
+                        } else {
+                            $list.html('<div class="task-empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p>暂无任务记录</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $list.html('<div class="task-empty"><p>加载失败</p></div>');
+                    }
+                });
+                return;
+            }
+
+            // 进行中模式：显示活跃任务 + 后端历史中 running 的任务
+            var taskIds = Object.keys(activeTasks);
+            // 从后端获取历史中 running 的任务，补充本地 activeTasks
+            $.ajax({
+                url: '/api/task-history',
+                type: 'GET',
+                dataType: 'json',
+                cache: false,
+                success: function(historyRes) {
+                    if (historyRes.code === 0 && historyRes.tasks) {
+                        historyRes.tasks.forEach(function(t) {
+                            if (t.statusClass === 'running' && !activeTasks[t.taskId]) {
+                                activeTasks[t.taskId] = {
+                                    name: t.name, running: true, paused: false,
+                                    exitCode: -1, offset: 0, startTime: t.startTime
+                                };
+                            }
+                        });
+                    }
+                    renderActiveTaskList($list);
+                },
+                error: function() {
+                    renderActiveTaskList($list);
+                }
+            });
+            return;
+        }
+
+        function renderActiveTaskList($list) {
+            var taskIds = Object.keys(activeTasks);
+            if (taskIds.length === 0) {
+                $list.html('<div class="task-empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p>暂无进行中的任务</p></div>');
+                localStorage.removeItem('activeTasks');
+                return;
+            }
+            var html = '';
+            taskIds.forEach(function (taskId) {
+                var t = activeTasks[taskId];
+                var statusLabel, statusClass;
+                var isActive = t.running && !t.paused;
+                var isPaused = t.paused;
+
+                if (isActive) {
+                    statusLabel = '<span class="spinner"></span>进行中';
+                    statusClass = 'running';
+                } else if (isPaused) {
+                    statusLabel = '已暂停';
+                    statusClass = 'paused';
+                } else if (t.exitCode === 0) {
+                    statusLabel = '已完成';
+                    statusClass = 'done';
+                } else if (t.exitCode === -2) {
+                    statusLabel = '已终止';
+                    statusClass = 'stopped';
+                } else {
+                    statusLabel = '失败(' + t.exitCode + ')';
+                    statusClass = 'failed';
+                }
+
+                var actionsHtml = '';
+                if (isActive || isPaused) {
+                    actionsHtml += '<button class="task-action-btn btn-stop" data-action="stop" data-task-id="' + taskId + '" title="终止"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg></button>';
+                }
+
+                html += '<div class="task-item' + (taskId == currentLogTaskId ? ' active' : '') + '" id="task-' + taskId + '" data-task-id="' + taskId + '">' +
+                    '<div class="task-info"><div class="task-name">' + escHtml(t.name) + '</div><div class="task-meta">' + (t.startTime || 'ID: ' + taskId) + '</div></div>' +
+                    '<div class="task-item-right">' +
+                    '<div class="task-status ' + statusClass + '">' + statusLabel + '</div>' +
+                    actionsHtml +
+                    '</div></div>';
+            });
+            $list.html(html);
+            bindTaskListEvents();
+
+            // 持久化到 localStorage
+            var toSave = {};
+            taskIds.forEach(function (taskId) {
+                toSave[taskId] = {
+                    name: activeTasks[taskId].name,
+                    running: activeTasks[taskId].running,
+                    paused: activeTasks[taskId].paused || false,
+                    exitCode: activeTasks[taskId].exitCode,
+                    offset: activeTasks[taskId].offset || 0
+                };
+            });
+            localStorage.setItem('activeTasks', JSON.stringify(toSave));
+        }
+
+        function bindTaskListEvents() {
+            var $list = $('#task-list');
+            // 点击任务行
+            $list.find('.task-item').off('click').on('click', function (e) {
+                if ($(e.target).closest('.task-action-btn').length > 0) return;
+                var taskId = $(this).data('taskId');
+                var logFile = $(this).attr('data-log-file');
+                // 判断是否为真正活跃的任务（后端仍在跟踪）
+                var isReallyActive = activeTasks[taskId] && activeTasks[taskId].running;
+                if (isReallyActive) {
+                    switchToTaskLog(taskId);
+                } else if (logFile) {
+                    // 已完成任务通过日志文件查看
+                    var fileName = logFile.split('/').pop();
+                    currentLogFilter = 0;
+                    closeAllModals();
+                    $('#log-viewer-overlay').show();
+                    $('#log-viewer-modal').show();
+                    loadLogFileList(0, fileName);
+                }
+            });
+            // 操作按钮事件
+            $list.find('.task-action-btn').off('click').on('click', function (e) {
+                e.stopPropagation();
+                var action = $(this).data('action');
+                var taskId = $(this).data('taskId');
+                if (action === 'stop') stopTask(taskId);
+                else if (action === 'retry') retryTask($(this).attr('data-raw-params'));
+            });
+        }
+
+        function startLogPolling() {
+            if (logPollTimer) return;
+            logPollTimer = setInterval(function () {
+                var taskIds = Object.keys(activeTasks);
+                if (taskIds.length === 0) {
+                    clearInterval(logPollTimer);
+                    logPollTimer = null;
+                    return;
+                }
+                taskIds.forEach(function (taskId) {
+                    var task = activeTasks[taskId];
+                    $.ajax({
+                        url: '/task-logs', type: 'GET', data: { taskId: taskId, offset: task.offset },
+                        success: function (res) {
+                            if (res.code !== 0) {
+                                // 任务不存在：清理前端状态
+                                if (res.msg && res.msg.indexOf('不存在') !== -1) {
+                                    if (currentLogTaskId == taskId) clearLogs();
+                                    delete activeTasks[taskId];
+                                    renderTaskList();
+                                }
+                                return;
+                            }
+                            var newLogs = res.logs && res.logs.length > 0;
+                            // 只有当前显示的任务才追加日志到面板
+                            if (newLogs && taskId == currentLogTaskId) {
+                                res.logs.forEach(function (line) {
+                                    var lvl = line.indexOf('[ERR]') === 0 ? 'error' : 'download';
+                                    appendLog(line, lvl);
+                                });
+                            }
+                            if (activeTasks[taskId]) {
+                                activeTasks[taskId].offset = res.total;
+                            }
+                            if (res.running === false) {
+                                $.ajax({
+                                    url: '/task-status', type: 'GET', data: { taskId: taskId },
+                                    success: function (sr) {
+                                        if (sr.running === false && activeTasks[taskId]) {
+                                            activeTasks[taskId].running = false;
+                                            activeTasks[taskId].exitCode = sr.exitCode;
+                                            // 当前任务完成时追加完成消息
+                                            if (taskId == currentLogTaskId) {
+                                                appendLog('任务 "' + task.name + '" 已' + (sr.exitCode === 0 ? '完成' : '失败(退出码:' + sr.exitCode + ')'), sr.exitCode === 0 ? 'success' : 'error');
+                                            }
+                                            renderTaskList();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                });
+            }, 2000);
+        }
+
+        // 每6秒验证任务状态
+        var verifyTimer = null;
+        function startTaskVerify() {
+            if (verifyTimer) return;
+            verifyTimer = setInterval(function () {
+                doVerify(false);
+            }, 6000);
+            // 立即执行一次
+            doVerify(false);
+        }
+
+        // 验证核心逻辑
+        function doVerify(isManual) {
+            // 收集本地 activeTasks 中的任务 ID
+            var localIds = Object.keys(activeTasks);
+            
+            // 如果在"全部"模式下，还需要从后端获取标记为 running 的历史任务
+            if (currentTaskFilter === 'all' || localIds.length === 0) {
+                $.ajax({
+                    url: '/api/task-history',
+                    type: 'GET',
+                    dataType: 'json',
+                    cache: false,
+                    success: function(historyRes) {
+                        var verifyIds = localIds.slice();
+                        if (historyRes.code === 0 && historyRes.tasks) {
+                            historyRes.tasks.forEach(function(t) {
+                                if (t.statusClass === 'running' && verifyIds.indexOf(t.taskId) === -1) {
+                                    verifyIds.push(t.taskId);
+                                }
+                            });
+                        }
+                        if (verifyIds.length === 0) {
+                            if (isManual) showToast('当前没有进行中的任务', 'info');
+                            return;
+                        }
+                        doVerifyWithIds(verifyIds, isManual);
+                    },
+                    error: function() {
+                        if (localIds.length === 0) {
+                            if (isManual) showToast('当前没有任务', 'info');
+                            return;
+                        }
+                        doVerifyWithIds(localIds, isManual);
+                    }
+                });
+                return;
+            }
+            
+            if (localIds.length === 0) {
+                if (isManual) showToast('当前没有任务', 'info');
+                return;
+            }
+            doVerifyWithIds(localIds, isManual);
+        }
+
+        // 使用指定 ID 列表进行验证
+        function doVerifyWithIds(ids, isManual) {
+            $.ajax({
+                url: '/api/task-verify',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ taskIds: ids }),
+                success: function(res) {
+                    if (res.code !== 0 || !res.tasks) {
+                        if (isManual) showToast('验证失败', 'error');
+                        return;
+                    }
+                    var changed = false;
+                    var finishedIds = [];
+                    res.tasks.forEach(function(t) {
+                        if (!activeTasks[t.taskId]) return;
+                        if (t.exists === false) {
+                            if (t.taskId == currentLogTaskId) {
+                                appendLog('任务 "' + activeTasks[t.taskId].name + '" 已结束(进程不存在)', 'error');
+                            }
+                            finishedIds.push(t.taskId);
+                            changed = true;
+                        } else if (t.running === false && activeTasks[t.taskId].running) {
+                            activeTasks[t.taskId].running = false;
+                            activeTasks[t.taskId].exitCode = t.exitCode;
+                            changed = true;
+                            if (t.taskId == currentLogTaskId) {
+                                var taskName = activeTasks[t.taskId].name;
+                                if (t.exitCode === 0) {
+                                    appendLog('任务 "' + taskName + '" 已完成', 'success');
+                                } else if (t.exitCode === -2) {
+                                    appendLog('任务 "' + taskName + '" 已终止', 'warn');
+                                } else {
+                                    appendLog('任务 "' + taskName + '" 失败(退出码:' + t.exitCode + ')', 'error');
+                                }
+                            }
+                        }
+                    });
+                    finishedIds.forEach(function(id) {
+                        delete activeTasks[id];
+                    });
+                    if (changed) {
+                        renderTaskList();
+                        if (isManual) showToast('任务状态已更新', 'success');
+                    } else {
+                        if (isManual) showToast('所有任务运行正常', 'info');
+                    }
+                    var hasRunning = false;
+                    Object.keys(activeTasks).forEach(function(id) {
+                        if (activeTasks[id].running) hasRunning = true;
+                    });
+                    if (!hasRunning && verifyTimer) {
+                        clearInterval(verifyTimer);
+                        verifyTimer = null;
+                    }
+                },
+                error: function() {
+                    if (isManual) showToast('验证请求失败', 'error');
+                }
+            });
+        }
+
+        // 手动触发验证
+        function manualVerify() {
+            doVerify(true);
+        }
+
+        // 重新发起失败/终止的任务
+        function retryTask(rawParamsStr) {
+            if (!rawParamsStr) {
+                showToast('无法获取原始任务参数', 'error');
+                return;
+            }
+            if (!confirm('确定要重新发起该任务吗？')) return;
+            var $btn = $('#submit-btn');
+            $btn.prop('disabled', true).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> 提交中...');
+            $.ajax({
+                url: "/download", type: "POST",
+                data: rawParamsStr,
+                processData: false, contentType: "application/json",
+                success: function (res) {
+                    $btn.prop('disabled', false).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 开始下载');
+                    if (res.code === 0) {
+                        showToast('任务已重新提交', 'success');
+                        if (res.taskId) {
+                            var params = JSON.parse(rawParamsStr);
+                            activeTasks[res.taskId] = { name: params["save-name"], running: true, paused: false, exitCode: -1, offset: 0 };
+                            renderTaskList();
+                            switchToTaskLog(res.taskId);
+                            appendLog('任务已重新提交: ' + (params["must"] || ''), 'info');
+                            startLogPolling();
+                            startTaskVerify();
+                        }
+                    } else {
+                        showToast(res.msg || '提交失败', 'error');
+                        appendLog('重新提交失败: ' + (res.msg || ''), 'error');
+                    }
+                },
+                error: function () {
+                    $btn.prop('disabled', false).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 开始下载');
+                    showToast('重新提交请求失败', 'error');
+                }
+            });
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+        }
+
+        // 更新日志筛选按钮状态
+        function updateLogFilterBtns() {
+            $('#log-filter-btns .filter-btn').removeClass('active');
+            $('#log-filter-btns .filter-btn[data-hours="' + currentLogFilter + '"]:not(.danger)').addClass('active');
+        }
+
+        // 加载日志文件列表
+        function loadLogFileList(filterHours, selectFile) {
+            $.get('/api/logs', function(res) {
+                var $list = $('#log-file-list');
+                if (res.code === 0 && res.logs.length > 0) {
+                    var now = new Date();
+                    var html = '';
+                    var firstFileName = '';
+                    res.logs.forEach(function(log, index) {
+                        if (filterHours > 0) {
+                            var logTime = new Date(log.modTime.replace(' ', 'T'));
+                            var diffHours = (now - logTime) / (1000 * 60 * 60);
+                            if (diffHours > filterHours) return;
+                        }
+                        var isActive = selectFile ? (log.name === selectFile) : (index === 0 && !firstFileName);
+                        if (!firstFileName || isActive) firstFileName = log.name;
+                        html += '<div class="log-file-item' + (isActive ? ' active' : '') + '" data-filename="' + log.name + '">';
+                        html += '<div class="log-file-name">' + escHtml(log.name) + '</div>';
+                        html += '<div class="log-file-meta">' + log.modTime + ' | ' + formatFileSize(log.size) + '</div>';
+                        html += '</div>';
+                    });
+                    if (html === '') {
+                        html = '<div class="log-file-item"><div class="log-file-name">无符合条件日志</div></div>';
+                    }
+                    $list.html(html);
+                    var target = selectFile ? selectFile : firstFileName;
+                    if (target) {
+                        loadLogContent(target);
+                    } else {
+                        $('#log-content-viewer').html('<div class="log-content-empty">无日志文件</div>');
+                    }
+                } else {
+                    $list.html('<div class="log-file-item"><div class="log-file-name">暂无日志文件</div></div>');
+                    $('#log-content-viewer').html('<div class="log-content-empty">暂无日志文件</div>');
+                }
+            });
+        }
+
+        // 加载日志内容
+        function loadLogContent(filename) {
+            currentLogFile = filename;
+            var $viewer = $('#log-content-viewer');
+            $viewer.html('<div class="log-content-empty">加载中...</div>');
+            $.ajax({
+                url: '/api/logs/' + encodeURIComponent(filename),
+                type: 'GET',
+                dataType: 'json',
+                cache: false,
+                success: function(res) {
+                    if (res.code === 0) {
+                        var lines = res.content.split('\n');
+                        var html = '';
+                        for (var i = 0; i < lines.length; i++) {
+                            var line = lines[i];
+                            var escaped = escHtml(line);
+                            var levelClass = '';
+                            if (/ERROR/i.test(escaped)) {
+                                levelClass = 'log-err';
+                            } else if (/WARN/i.test(escaped)) {
+                                levelClass = 'log-warn';
+                            } else if (/Done|完成/i.test(escaped)) {
+                                levelClass = 'log-success';
+                            } else if (/INFO/i.test(escaped)) {
+                                levelClass = 'log-info';
+                            }
+                            html += '<div class="log-line-row' + (levelClass ? ' ' + levelClass : '') + '">';
+                            html += '<span class="log-line-num">' + (i + 1) + '</span>';
+                            html += '<span class="log-line-text">' + escaped + '</span>';
+                            html += '</div>';
+                        }
+                        for (var p = 0; p < 8; p++) {
+                            html += '<div class="log-line-row"><span class="log-line-num">&nbsp;</span><span class="log-line-text"></span></div>';
+                        }
+                        $viewer.html(html);
+                    } else {
+                        $viewer.html('<div class="log-content-empty">' + escHtml(res.msg) + '</div>');
+                    }
+                },
+                error: function() {
+                    $viewer.html('<div class="log-content-empty">加载失败</div>');
+                }
+            });
+        }
+
+        function val(id) {
+            var $el = $('#' + id);
+            if ($el.is(':checkbox')) return $el.is(':checked');
+            if ($el.is(':input')) return $el.val().trim();
+            return '';
+        }
+
+        function buildRequestData() {
+            var data = {
+                "must": $('#must').val().trim(),
+                "save-dir": $('#save_dir').val().trim(),
+                "save-name": $('#save_name').val().trim(),
+                "base-url": $('#base_url').val().trim(),
+                "max-speed": $('#max_speed').val().trim(),
+                "log-file-path": $('#log_file_path').val().trim(),
+                "header": $('#header').val().trim(),
+                "custom-proxy": $('#custom_proxy').val().trim(),
+                "custom-range": $('#custom_range').val().trim(),
+                "task-start-at": $('#task_start_at').val().trim(),
+                "select-video": $('#select_video').val().trim(),
+                "select-audio": $('#select_audio').val().trim(),
+                "select-subtitle": $('#select_subtitle').val().trim(),
+                "ffmpeg-binary-path": $('#ffmpeg_binary_path').val().trim(),
+                "ui-language": $('#ui_language').val(),
+                "log-level": $('#log_level').val(),
+                "sub-format": $('#sub_format').val(),
+                "binary-merge": $('#binary_merge').is(':checked'),
+                "use-ffmpeg-concat-demuxer": $('#use_ffmpeg_concat_demuxer').is(':checked'),
+                "del-after-done": $('#del_after_done').is(':checked'),
+                "no-date-info": $('#no_date_info').is(':checked'),
+                "write-meta-json": $('#write_meta_json').is(':checked'),
+                "skip-merge": $('#skip_merge').is(':checked'),
+                "skip-download": $('#skip_download').is(':checked'),
+                "check-segments-count": $('#check_segments_count').is(':checked'),
+                "auto-select": $('#auto_select').is(':checked'),
+                "no-ansi-color": $('#no_ansi_color').is(':checked'),
+                "no-log": $('#no_log').is(':checked'),
+                "sub-only": $('#sub_only').is(':checked'),
+                "append-url-params": $('#append_url_params').is(':checked'),
+                "concurrent-download": $('#concurrent_download').is(':checked'),
+                "auto-subtitle-fix": $('#auto_subtitle_fix').is(':checked'),
+                "disable-update": $('#disable_update').is(':checked')
+            };
+            // 数字类型
+            var tc = parseInt($('#thread_count').val());
+            if (!isNaN(tc) && tc > 0) data["thread-count"] = tc;
+            var ht = parseInt($('#http_timeout').val());
+            if (!isNaN(ht) && ht > 0) data["http-timeout"] = ht;
+            var dr = parseInt($('#download_retry').val());
+            if (!isNaN(dr) && dr > 0) data["download-retry"] = dr;
+            // 移除空字符串
+            for (var k in data) {
+                if (data.hasOwnProperty(k) && data[k] === '') delete data[k];
+            }
+            return data;
+        }
+
+        // 可折叠区块
+        function toggleSection(el) {
+            var $label = $(el);
+            var $body = $label.next('.section-body');
+            var $chev = $label.find('.chevron');
+            if ($body.is(':visible')) {
+                $body.slideUp(200);
+                $chev.css('transform', 'rotate(-90deg)');
+            } else {
+                $body.slideDown(200);
+                $chev.css('transform', 'rotate(0deg)');
+            }
+        }
+
+        $(document).ready(function () {
+            // 获取版本号
+            $.ajax({
+                url: '/version',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res.version) {
+                        $('#version-badge').text(res.version);
+                    }
+                }
+            });
+
+            // 基础信息区块默认展开，不折叠
+            // 其他可折叠区块默认折叠
+            $('.section-label.toggleable').each(function () {
+                var $label = $(this);
+                var $body = $label.next('.section-body');
+                var $chev = $label.find('.chevron');
+                $body.hide();
+                $chev.css('transform', 'rotate(-90deg)');
+            });
+
+            // 从 localStorage 恢复任务列表
+            try {
+                var saved = localStorage.getItem('activeTasks');
+                if (saved) {
+                    activeTasks = JSON.parse(saved);
+                }
+            } catch (e) { activeTasks = {}; }
+            renderTaskList();
+
+            // 任务列表筛选标签
+            $(document).on('click', '.task-tab', function() {
+                currentTaskFilter = $(this).data('filter');
+                $('.task-tab').removeClass('active');
+                $(this).addClass('active');
+                renderTaskList();
+            });
+
+            // 恢复后默认显示第一个任务的日志
+            var taskIds = Object.keys(activeTasks);
+            if (taskIds.length > 0) {
+                switchToTaskLog(taskIds[0]);
+            }
+
+            // 恢复进行中的任务的轮询
+            var hasRunning = false;
+            Object.keys(activeTasks).forEach(function (pid) {
+                if (activeTasks[pid].running) hasRunning = true;
+            });
+            if (hasRunning) {
+                startLogPolling();
+                startTaskVerify();
+                appendLog('检测到进行中的任务，继续轮询', 'info');
+            }
+
+            appendLog('服务已就绪', 'info');
+
+            $('#clear-log-btn').on('click', function () { clearLogs(); });
+
+            // 手动验证按钮
+            $('#task-verify-btn').on('click', function() { manualVerify(); });
+
+            // 清空已完成任务
+            $('#task-clear-done-btn').on('click', function() {
+                if (!confirm('确定要清空所有已完成的任务记录吗？')) return;
+                $.ajax({
+                    url: '/api/task-history/clear-done',
+                    type: 'POST',
+                    success: function(res) {
+                        if (res.code === 0) {
+                            showToast('已清空 ' + res.deleted + ' 条已完成记录', 'success');
+                            // 同步清理本地 activeTasks 中已完成的任务
+                            var toDelete = [];
+                            Object.keys(activeTasks).forEach(function(id) {
+                                if (!activeTasks[id].running && activeTasks[id].exitCode === 0) {
+                                    toDelete.push(id);
+                                }
+                            });
+                            toDelete.forEach(function(id) { delete activeTasks[id]; });
+                            renderTaskList();
+                        } else {
+                            showToast(res.msg || '清空失败', 'error');
+                        }
+                    },
+                    error: function() { showToast('清空请求失败', 'error'); }
+                });
+            });
+
+            $('#submit-btn').on('click', function (e) {
+                e.preventDefault();
+                var data = buildRequestData();
+
+                if (!data["must"] || !data["save-dir"] || !data["save-name"]) {
+                    showToast('请填写必填项：m3u8地址、保存目录、视频名称', 'error');
                     return;
                 }
 
-                var jsonData = JSON.stringify(data);
+                var $btn = $('#submit-btn');
+                $btn.prop('disabled', true).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> 提交中...');
+
                 $.ajax({
-                    url: "/download",
-                    type: "POST",
-                    data: jsonData,
-                    processData: false,
-                    contentType: "application/json",
-                    success: function (data) {
-                        $("#page-container").html(data);
-                        console.log(6666, data)
-                        if (data && data.code === 0) {
-                            // alert(JSON.stringify(data));
-                            alert(data.msg);
+                    url: "/download", type: "POST",
+                    data: JSON.stringify(data),
+                    processData: false, contentType: "application/json",
+                    success: function (res) {
+                        $btn.prop('disabled', false).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 开始下载');
+                        if (res.code === 0) {
+                            showToast('任务已提交', 'success');
+                            if (res.taskId) {
+                                activeTasks[res.taskId] = { name: data["save-name"], running: true, paused: false, exitCode: -1, offset: 0 };
+                                renderTaskList();
+                                switchToTaskLog(res.taskId);
+                                appendLog('任务已提交: ' + data["must"], 'info');
+                                appendLog('保存至: ' + data["save-dir"] + '/' + data["save-name"], 'info');
+                                startLogPolling();
+                                startTaskVerify();
+                            }
                         } else {
-                            alert("任务添加失败:" + e);
+                            showToast(res.msg || '提交失败', 'error');
+                            appendLog('提交失败: ' + (res.msg || ''), 'error');
                         }
                     },
                     error: function () {
-                        alert("请求页面失败，请重试！" + e);
-                    },
+                        $btn.prop('disabled', false).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 开始下载');
+                        showToast('请求失败', 'error');
+                        appendLog('请求失败，请检查服务', 'error');
+                    }
                 });
             });
+
+            // API 文档弹窗
+            $('#api-doc-btn').click(function() {
+                closeAllModals();
+                $('#api-doc-overlay').show();
+                $('#api-doc-modal').show();
+            });
+            $('#api-doc-close, #api-doc-overlay').click(function() {
+                $('#api-doc-overlay').hide();
+                $('#api-doc-modal').hide();
+            });
+
+            // 日志查看器
+            $('#log-viewer-close, #log-viewer-overlay').click(function() {
+                $('#log-viewer-overlay').hide();
+                $('#log-viewer-modal').hide();
+            });
+
+            // 已下载弹窗
+            $('#videos-close, #videos-overlay').click(function() {
+                $('#videos-overlay').hide();
+                $('#videos-modal').hide();
+            });
+            $('#videos-btn').click(function() {
+                closeAllModals();
+                $('#videos-overlay').show();
+                $('#videos-modal').show();
+                loadVideosDirList();
+            });
+
+            // 加载视频目录列表
+            function loadVideosDirList() {
+                var $list = $('#videos-dir-list');
+                $list.html('<div class="log-content-empty">加载中...</div>');
+                $.get('/api/videos/dirs', function(res) {
+                    if (res.code === 0 && res.dirs && res.dirs.length > 0) {
+                        var html = '';
+                        res.dirs.forEach(function(dir, i) {
+                            html += '<div class="videos-dir-item' + (i === 0 ? ' active' : '') + '" data-dir="' + escHtml(dir.name) + '">';
+                            html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+                            html += '<div class="videos-dir-name">' + escHtml(dir.name) + '</div>';
+                            html += '<div class="videos-dir-meta">' + dir.modTime + '</div>';
+                            html += '</div>';
+                        });
+                        $list.html(html);
+                        // 自动加载第一个目录
+                        loadVideosFileList(res.dirs[0].name);
+                    } else {
+                        $list.html('<div class="log-content-empty">暂无下载目录</div>');
+                        $('#videos-file-list').html('<div class="log-content-empty">暂无视频文件</div>');
+                    }
+                });
+            }
+
+            // 加载指定目录的视频文件列表
+            function loadVideosFileList(dirName) {
+                var $list = $('#videos-file-list');
+                $list.html('<div class="log-content-empty">加载中...</div>');
+                $.get('/api/videos/files', { dir: dirName }, function(res) {
+                    if (res.code === 0 && res.files && res.files.length > 0) {
+                        var html = '<div class="videos-dir-title">' + escHtml(dirName) + '</div>';
+                        res.files.forEach(function(f) {
+                            html += '<div class="videos-file-item">';
+                            html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+                            html += '<div class="videos-file-info">';
+                            html += '<div class="videos-file-name">' + escHtml(f.name) + '</div>';
+                            html += '<div class="videos-file-meta">' + f.modTime + ' | ' + formatFileSize(f.size) + '</div>';
+                            html += '</div></div>';
+                        });
+                        $list.html(html);
+                    } else {
+                        $list.html('<div class="log-content-empty">' + escHtml(dirName) + ' 下暂无视频文件</div>');
+                    }
+                });
+            }
+
+            // 点击目录切换
+            $(document).on('click', '.videos-dir-item', function() {
+                $('.videos-dir-item').removeClass('active');
+                $(this).addClass('active');
+                var dirName = $(this).data('dir');
+                loadVideosFileList(dirName);
+            });
+
+            // 打开日志查看器
+            $('#log-viewer-btn').click(function() {
+                closeAllModals();
+                currentLogFilter = 0;
+                $('#log-viewer-overlay').show();
+                $('#log-viewer-modal').show();
+                loadLogFileList(0);
+                updateLogFilterBtns();
+            });
+
+            // 日志筛选按钮
+            $(document).on('click', '.filter-btn', function() {
+                if ($(this).attr('id') === 'clear-old-logs-btn') return;
+                currentLogFilter = parseFloat($(this).data('hours'));
+                updateLogFilterBtns();
+                loadLogFileList(currentLogFilter);
+            });
+
+            // 清空1天以上日志
+            $(document).on('click', '#clear-old-logs-btn', function() {
+                if (!confirm('确定要删除1天前的所有日志文件吗？此操作不可恢复！')) return;
+                $.post('/api/logs/clear-old', function(res) {
+                    if (res.code === 0) {
+                        showToast('已删除 ' + res.deleted + ' 个日志文件', 'success');
+                        loadLogFileList(currentLogFilter);
+                    } else {
+                        showToast(res.msg || '删除失败', 'error');
+                    }
+                });
+            });
+
+            // 点击文件列表项
+            $(document).on('click', '.log-file-item', function() {
+                var filename = $(this).data('filename');
+                $('.log-file-item').removeClass('active');
+                $(this).addClass('active');
+                loadLogContent(filename);
+            });
+
         });
     </script>
-</body>
 
+    <!-- API 文档弹窗 -->
+    <div id="api-doc-overlay"></div>
+    <div id="api-doc-modal" class="api-doc-modal">
+        <div class="api-doc-header">
+            <h2>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                API 接口文档
+            </h2>
+            <button id="api-doc-close" class="api-doc-close">&times;</button>
+        </div>
+        <div class="api-doc-content">
+            <div class="api-section">
+                <h3>新建下载任务</h3>
+                <p class="api-url"><span class="method post">POST</span> <code>/download</code></p>
+                <p class="api-params-title">请求参数:</p>
+                <table class="api-table">
+                    <thead>
+                        <tr><th>参数</th><th>必选</th><th>类型</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>must</code></td><td>是</td><td>string</td><td>m3u8 视频 URL 地址</td></tr>
+                        <tr><td><code>save-dir</code></td><td>是</td><td>string</td><td>保存视频目录 在项目/data/videos/创建目录</td></tr>
+                        <tr><td><code>save-name</code></td><td>是</td><td>string</td><td>保存视频名称</td></tr>
+                        <tr><td><code>base-url</code></td><td>否</td><td>string</td><td>设置 BaseURL</td></tr>
+                        <tr><td><code>max-speed</code></td><td>否</td><td>string</td><td>限速，支持如：15M、100K</td></tr>
+                        <tr><td><code>binary-merge</code></td><td>否</td><td>bool</td><td>二进制合并，默认 False</td></tr>
+                        <tr><td><code>del-after-done</code></td><td>否</td><td>bool</td><td>完成后删除临时文件，默认 True</td></tr>
+                    </tbody>
+                </table>
+                <p class="api-params-title">返回参数:</p>
+                <table class="api-table">
+                    <thead>
+                        <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>code</code></td><td>int</td><td>状态码，0=成功，1=失败</td></tr>
+                        <tr><td><code>msg</code></td><td>string</td><td>提示信息</td></tr>
+                        <tr><td><code>console</code></td><td>string</td><td>执行的命令</td></tr>
+                        <tr><td><code>taskId</code></td><td>string</td><td>任务 ID</td></tr>
+                        <tr><td><code>pid</code></td><td>int</td><td>进程 PID</td></tr>
+                    </tbody>
+                </table>
+                <p class="api-params-title">请求示例:</p>
+                <pre class="api-code">POST http://127.0.0.1:5050/download
+
+{
+  "must": "https://example.com/video.m3u8",
+  "save-name": "视频文件名称",
+  "save-dir": "download"
+}</pre>
+                <p class="api-params-title">返回示例:</p>
+                <pre class="api-code">{
+  "code": 0,
+  "msg": "任务已在后台启动，日志面板实时显示下载进度",
+  "console": "./N_m3u8DL-RE.exe https://example.com/video.m3u8 --tmp-dir ./data/temp_dir/ --save-dir ./data/download/download --save-name 视频文件名称 --log-file-path ./Logs/视频文件名称_20241201_120000.log",
+  "taskId": "T000001",
+  "pid": 12345
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 日志查看器弹窗 -->
+    <div id="log-viewer-overlay"></div>
+    <div id="log-viewer-modal" class="log-viewer-modal">
+        <div class="log-viewer-header">
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                日志文件
+            </h3>
+            <button id="log-viewer-close" class="log-viewer-close">&times;</button>
+        </div>
+        <div class="log-viewer-body">
+            <div class="log-list-container">
+                <div class="log-filter-btns" id="log-filter-btns">
+                    <button class="filter-btn active" data-hours="0">全部</button>
+                    <button class="filter-btn" data-hours="0.17">10分钟</button>
+                    <button class="filter-btn" data-hours="0.5">半小时</button>
+                    <button class="filter-btn" data-hours="1">1小时</button>
+                    <button class="filter-btn" data-hours="3">3小时</button>
+                    <button class="filter-btn danger" id="clear-old-logs-btn">清空1天+</button>
+                </div>
+                <div class="log-file-list" id="log-file-list">
+                    <!-- 动态加载文件列表 -->
+                </div>
+            </div>
+            <div class="log-content-viewer" id="log-content-viewer">
+                <pre class="log-content-empty">选择左侧日志文件查看内容</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 已下载弹窗 -->
+    <div id="videos-overlay"></div>
+    <div id="videos-modal" class="log-viewer-modal">
+        <div class="log-viewer-header">
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                已下载文件
+            </h3>
+            <button id="videos-close" class="log-viewer-close">&times;</button>
+        </div>
+        <div class="log-viewer-body videos-body-layout">
+            <div class="videos-dir-list" id="videos-dir-list">
+                <!-- 动态加载目录列表 -->
+            </div>
+            <div class="videos-file-list" id="videos-file-list">
+                <div class="log-content-empty">选择左侧目录查看视频文件</div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
 </html>

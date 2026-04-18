@@ -1,0 +1,18 @@
+# IDE
+.idea/
+.vscode/
+
+# Go 编译产物
+*.exe
+
+# 第三方可执行文件（Linux 版）
+N_m3u8DL-RE
+ffmpeg
+
+# 运行时生成
+/Logs
+/data
+
+# 系统文件
+Thumbs.db
+.DS_Store
