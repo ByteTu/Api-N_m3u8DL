@@ -35,9 +35,9 @@
 
 **GitHub Releases:** https://github.com/ByteTu/Api-N_m3u8DL/releases
 
-> 需要将 `N_m3u8DL-RE` 可执行文件和 `ffmpeg` 放在同一目录下运行。
-
 ### Docker 部署
+
+**Docker:** https://hub.docker.com/r/isouu/api_m3u8dl
 
 ```shell
 # 拉取镜像
@@ -50,8 +50,6 @@ docker run --restart=always --name api_m3u8dl \
   -v /opt/api_m3u8dl/logs:/goApp/Logs \
   -d isouu/api_m3u8dl:v3.0
 ```
-
-> 注意：需要在容器中放置 `N_m3u8DL-RE` (Linux版) 和 `ffmpeg` (Linux版) 可执行文件，可通过 volume 挂载或额外 COPY。
 
 | 说明 | 容器路径 |
 | :--- | :--- |
