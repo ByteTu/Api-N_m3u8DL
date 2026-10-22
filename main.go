@@ -16,6 +16,7 @@ import (
 	"regexp"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -29,6 +30,170 @@ var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
 
 func stripAnsi(s string) string {
 	return ansiRegex.ReplaceAllString(s, "")
+}
+
+// splitHeaders 把用户填写的请求头拆成 N_m3u8DL-RE 需要的独立头列表。
+//
+// 背景：N_m3u8DL-RE 的 -H 是"每个头一次"，且值不能带引号：
+//
+//	-H "Cookie: a=1" -H "User-Agent: iOS"
+//
+// 但 Go 的 exec.Command 不做 shell 解析，用户输入没法原样透传。
+// 因此这里接受几种常见写法，统一归一成 []string{"Cookie: a=1", "User-Agent: iOS"}：
+//
+//	Cookie: a=1                                     （推荐，最自然）
+//	Cookie: a=1\nUser-Agent: iOS                    （每行一个）
+//	Cookie: a=1; User-Agent: iOS                    （分号分隔）
+//	{"Cookie":"a=1","User-Agent":"iOS"}             （JSON 对象）
+//	[{"name":"Cookie","value":"a=1"}]               （JSON 数组，含 name/value 字段）
+//	["Cookie: a=1","User-Agent: iOS"]               （JSON 数组，整串 Name: Value）
+//	-H "Cookie: a=1" -H "User-Agent: iOS"           （照官方示例写，容忍）
+//	-H "Cookie: a=1" -H User-Agent: iOS             （少引号）
+//
+// 归一化规则：
+//   - JSON 先整体反序列化，不走下面的文本拆分（JSON 里的分号、引号、
+//     换行都是内容，按文本拆会把值拆坏）
+//   - 按换行 / 分号 / " -H " 拆分成独立的头
+//   - 去掉成对的单/双引号
+//   - 丢掉 "-H" / "--header" 前缀
+//   - 只保留含冒号且看起来像 "Name: Value" 的条目
+func splitHeaders(raw string) []string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil
+	}
+
+	// JSON 写法：首字符是 { 或 [ 且整串是合法 JSON 时，走 JSON 分支。
+	// 用 json.Valid 而不是"能不能 unmarshal 成 map"来判断，是为了把
+	// {Cookie: a=1} 这种坏 JSON 交给下面的文本拆分（首字符满足但非法）。
+	//
+	// 注意：解析成功但提不出有效头（如 {}、{"Cookie":123}）时同样走 JSON
+	// 分支并返回空，不再回退文本拆分——否则 {"Cookie":123} 会被文本逻辑
+	// 在花括号里抓到冒号，把整串 JSON 当成一个非法头传下去。
+	if raw[0] == '{' || raw[0] == '[' {
+		if isJSON(raw) {
+			return parseJSONHeaders(raw)
+		}
+	}
+
+	var out []string
+	for _, chunk := range strings.FieldsFunc(raw, func(r rune) bool {
+		return r == '\n' || r == '\r' || r == ';'
+	}) {
+		chunk = strings.TrimSpace(chunk)
+		if chunk == "" {
+			continue
+		}
+		for _, seg := range strings.Split(chunk, " -H ") {
+			seg = strings.TrimSpace(seg)
+			seg = strings.TrimPrefix(seg, "-H")
+			seg = strings.TrimPrefix(seg, "--header")
+			seg = strings.TrimSpace(seg)
+			if seg == "" {
+				continue
+			}
+			// 去掉包裹的引号（成对才去，避免吃掉值里必要的引号）
+			if len(seg) >= 2 {
+				first, last := seg[0], seg[len(seg)-1]
+				if (first == '"' && last == '"') || (first == '\'' && last == '\'') {
+					seg = seg[1 : len(seg)-1]
+				}
+			}
+			seg = strings.TrimSpace(seg)
+			// 必须是 "Name: Value" 形态，Name 里不能有空格
+			idx := strings.Index(seg, ":")
+			if idx <= 0 {
+				continue
+			}
+			name := strings.TrimSpace(seg[:idx])
+			if name == "" || strings.ContainsAny(name, " \t") {
+				continue
+			}
+			out = append(out, seg)
+		}
+	}
+	return out
+}
+
+// parseJSONHeaders 解析 JSON 形式的请求头输入，支持两种形态：
+//
+//	{"Cookie":"a=1","User-Agent":"iOS"}                 对象：key 即头名
+//	[{"name":"Cookie","value":"a=1"}, ...]              数组：显式 name/value
+//	["Cookie: a=1", "User-Agent: iOS"]                  数组：整串 "Name: Value"
+//
+// 调用方需先用 isJSON 确认输入确实是 JSON；本函数对合法 JSON 总是给出
+// 确定结果（可能为空），不做文本回退。
+func parseJSONHeaders(raw string) []string {
+	// 形态一：JSON 对象，key 是头名、value 是头值
+	var obj map[string]any
+	if err := json.Unmarshal([]byte(raw), &obj); err == nil {
+		// 用排序保证输出顺序稳定，便于测试和日志比对
+		keys := make([]string, 0, len(obj))
+		for k := range obj {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		var out []string
+		for _, k := range keys {
+			v, ok := obj[k].(string)
+			if !ok || strings.TrimSpace(k) == "" {
+				continue
+			}
+			out = append(out, k+": "+v)
+		}
+		return out
+	}
+
+	// 形态二/三：JSON 数组
+	var arr []any
+	if err := json.Unmarshal([]byte(raw), &arr); err == nil {
+		var out []string
+		for _, item := range arr {
+			switch it := item.(type) {
+			case string:
+				// ["Cookie: a=1", ...]：整串是 "Name: Value"，交给文本逻辑归一
+				if hdrs := splitHeaders(it); len(hdrs) > 0 {
+					out = append(out, hdrs...)
+				}
+			case map[string]any:
+				// [{"name":"Cookie","value":"a=1"}, ...]
+				// name/value 字段名做兼容：也接受 key/value、header/value
+				name := jsonStr(it, "name", "key", "header")
+				val := jsonStr(it, "value", "val")
+				if name != "" && val != "" {
+					out = append(out, name+": "+val)
+					continue
+				}
+				// 兼容只有单键的写法：[{"Cookie":"a=1"}]
+				if len(it) == 1 {
+					for k, v := range it {
+						if s, ok := v.(string); ok && strings.TrimSpace(k) != "" {
+							out = append(out, k+": "+s)
+						}
+					}
+				}
+			}
+		}
+		return out
+	}
+	return nil
+}
+
+// jsonStr 从 map 里按候选键名依次取字符串值，取到即返回。
+func jsonStr(m map[string]any, keys ...string) string {
+	for _, k := range keys {
+		if v, ok := m[k].(string); ok && strings.TrimSpace(v) != "" {
+			return strings.TrimSpace(v)
+		}
+	}
+	return ""
+}
+
+// isJSON 判断整串是否是合法 JSON（对象或数组）。
+// 与"首字符是不是 { ["的区别在于：像 {Cookie: a=1} 这种坏 JSON
+// 首字符也满足，但 json.Valid 会否掉，从而回退到文本拆分。
+func isJSON(raw string) bool {
+	return json.Valid([]byte(raw))
 }
 
 // gbkToUtf8 将 GBK 编码转换为 UTF-8 字符串（如果数据已经是 UTF-8 则不转换）
@@ -294,8 +459,16 @@ func DownloadVideo(c *gin.Context) {
 	if reqData.ThreadCount > 0 {
 		cmd.Args = append(cmd.Args, "--thread-count", fmt.Sprintf("%d", reqData.ThreadCount))
 	}
-	if reqData.Header != "" {
-		cmd.Args = append(cmd.Args, "-H", reqData.Header)
+	if hdrs := splitHeaders(reqData.Header); len(hdrs) > 0 {
+		// N_m3u8DL-RE 要求每个头单独一个 -H，值不能带引号：
+		//   -H "Cookie: a=1" -H "User-Agent: iOS"
+		// 而 exec.Command 不做 shell 解析，不能把用户输入原样透传——否则
+		// 用户按 shell 习惯写的多个 -H 会被当成一个非法头，被 N_m3u8DL-RE
+		// 静默丢弃，表现为"配了请求头却没生效"。
+		// 所以这里先把用户输入拆成独立的头，再逐个追加。
+		for _, h := range hdrs {
+			cmd.Args = append(cmd.Args, "-H", h)
+		}
 	}
 
 	// === 合并参数 ===
@@ -434,9 +607,17 @@ func DownloadVideo(c *gin.Context) {
 	// 保存到历史记录
 	addTaskHistory(task, logFilePath, rawParams)
 
+	// N_m3u8DL-RE 的进度条用 \r 原地刷新，攒起来是单行几万字节的文本
+	// （实测可达 96KB+）。bufio.Scanner 默认上限 64KB，超限后 Scan() 直接
+	// 返回 false，读取 goroutine 退出而子进程仍在写管道，最终把管道写满
+	// 导致子进程阻塞——表现为任务"莫名卡死/消失"。
+	// 这里把 buffer 上限提到 1MB。
+	const maxLineBytes = 1 << 20 // 1MB
+
 	// 实时捕获 stdout
 	go func() {
 		scanner := bufio.NewScanner(stdout)
+		scanner.Buffer(make([]byte, 0, 64*1024), maxLineBytes)
 		for scanner.Scan() {
 			line := stripAnsi(gbkToUtf8(scanner.Bytes()))
 			tasksMu.Lock()
@@ -450,6 +631,7 @@ func DownloadVideo(c *gin.Context) {
 	// 实时捕获 stderr
 	go func() {
 		scanner := bufio.NewScanner(stderr)
+		scanner.Buffer(make([]byte, 0, 64*1024), maxLineBytes)
 		for scanner.Scan() {
 			line := stripAnsi(gbkToUtf8(scanner.Bytes()))
 			tasksMu.Lock()

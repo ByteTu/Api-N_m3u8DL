@@ -1,0 +1,19 @@
+# 版本控制
+.git
+.gitignore
+.github
+
+# 运行时生成
+/Logs
+/data
+
+# 第三方可执行文件与缓存（镜像里按架构现装）
+N_m3u8DL-RE
+ffmpeg
+
+# IDE / 系统文件
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+**/.DS_Store

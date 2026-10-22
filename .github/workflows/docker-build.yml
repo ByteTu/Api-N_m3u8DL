@@ -1,0 +1,107 @@
+name: Build and Push Docker image
+
+# 推 tag 时发布正式版本，手动触发可随时构建
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: '附加标签（逗号分隔，如 test,dev），与自动生成的标签一起推送'
+        required: false
+        default: ''
+      m3u8dl_version:
+        description: 'N_m3u8DL-RE 版本 tag（留空用 Dockerfile 里的默认值）'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  packages: write # 推送镜像到 GitHub Container Registry (ghcr.io)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 交叉构建 arm64 镜像需要 QEMU 模拟执行目标架构的构建/下载步骤
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # 用 GITHUB_TOKEN 登录 GHCR，无需额外配置 secret
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 手动触发时的两个可选输入都需要"为空则不传"的处理：
+      #   tags            附加镜像标签；type=raw 会把空字符串当成一个 tag 导致
+      #                    metadata-action 报错
+      #   m3u8dl_version  N_m3u8DL-RE 版本；写成 N_M3U8DL_VERSION= 会覆盖掉
+      #                    Dockerfile 里 ARG 的默认值，推 tag 时就装不上二进制了
+      - name: Prepare inputs
+        id: prepare
+        env:
+          EXTRA_TAGS: ${{ github.event.inputs.tags }}
+          M3U8DL_VERSION: ${{ github.event.inputs.m3u8dl_version }}
+        run: |
+          set -euo pipefail
+
+          # 附加标签：逗号分隔 -> 每行一个，去掉空白项、去重
+          printf '%s' "$EXTRA_TAGS" | tr ',' '\n' \
+            | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d' \
+            | awk '!seen[$0]++' > "$RUNNER_TEMP/extra_tags.txt"
+          {
+            echo 'tags<<EOF'
+            cat "$RUNNER_TEMP/extra_tags.txt"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+          echo "附加标签:"; sed 's/^/  /' "$RUNNER_TEMP/extra_tags.txt"
+
+          # N_m3u8DL-RE 版本：只在填了值时才作为 build-arg 传出
+          if [ -n "$M3U8DL_VERSION" ]; then
+            echo "build_args=N_M3U8DL_VERSION=$M3U8DL_VERSION" >> "$GITHUB_OUTPUT"
+            echo "N_m3u8DL-RE 版本（手动指定）: $M3U8DL_VERSION"
+          else
+            echo "build_args=" >> "$GITHUB_OUTPUT"
+            echo "N_m3u8DL-RE 版本：用 Dockerfile 里的默认值"
+          fi
+
+      # 标签策略：
+      #   v* tag      → 1.2.3（去 v）+ 1.2 + 1 + latest
+      #   其他触发     → 分支名 / sha / latest
+      #   workflow_dispatch 的 tags 输入作为附加标签追加
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch
+            type=sha
+            type=raw,value=latest
+            type=raw,value=${{ steps.prepare.outputs.tags }}
+
+      # N_m3u8DL-RE 版本默认值写在 Dockerfile 的 ARG 里，未手动指定时不传
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ steps.prepare.outputs.build_args }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

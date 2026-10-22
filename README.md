@@ -58,6 +58,25 @@ docker run --restart=always --name api_m3u8dl \
 | 下载文件保存路径 | `/goApp/data/videos` |
 | 临时文件保存路径 | `/goApp/data/temp_dir` |
 
+**GitHub Container Registry（本仓库自动构建，支持 amd64 / arm64）：**
+
+```shell
+# 拉取镜像（把 <owner> 换成仓库所有者）
+docker pull ghcr.io/<owner>/api-n_m3u8dl:latest
+
+# 启动容器
+docker run --restart=always --name api_m3u8dl \
+  -p 5050:5050 \
+  -v /opt/api_m3u8dl/data:/goApp/data \
+  -v /opt/api_m3u8dl/logs:/goApp/Logs \
+  -d ghcr.io/<owner>/api-n_m3u8dl:latest
+```
+
+镜像由 `.github/workflows/docker-build.yml` 自动构建并推送：推送 `v*` tag 时发布
+`1.2.3` / `1.2` / `1` / `latest` 等标签，也可在 Actions 页面手动触发并附加自定义标签。
+镜像内已内置 N_m3u8DL-RE 与 ffmpeg，`Dockerfile` 顶部的
+`N_M3U8DL_VERSION` 用于指定 N_m3u8DL-RE 版本。
+
 ### 本地编译
 
 ```shell
@@ -99,7 +118,23 @@ POST /download
 | `base-url` | string | | 设置 BaseURL，用于相对路径拼接 |
 | `max-speed` | string | 不限速 | 限速，如 `15M`、`100K` |
 | `thread-count` | int | CPU线程数 | 下载线程数 |
-| `header` | string | | 自定义 HTTP 请求头 |
+| `header` | string | | 自定义 HTTP 请求头。支持文本与 JSON 两种写法，见下方说明 |
+
+**自定义请求头 `header` 的写法：**
+
+支持文本和 JSON 两种形式，多个请求头任选一种分隔方式：
+
+| 写法 | 示例 |
+| :--- | :--- |
+| 单个请求头 | `Cookie: auth=secret` |
+| 分号分隔 | `Cookie: auth=secret; User-Agent: iOS` |
+| 换行分隔 | 每行一个请求头 |
+| 官方示例风格 | `-H "Cookie: auth=secret" -H "User-Agent: iOS"` |
+| JSON 对象 | `{"Cookie":"auth=secret","User-Agent":"iOS"}` |
+| JSON 数组 | `[{"name":"Cookie","value":"auth=secret"},{"name":"User-Agent","value":"iOS"}]` |
+
+> 推荐用 JSON 对象写法：请求头值里含分号、引号、冒号时不会被拆坏，
+> 例如 `{"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) ..."}` 中的分号会完整保留。
 
 **合并选项：**
 
@@ -345,7 +380,11 @@ GET /version
 ├── process_windows.go   # Windows 进程管理（暂停/恢复/终止/检测）
 ├── process_linux.go     # Linux进程管理
 ├── go.mod / go.sum      # Go 依赖管理
-├── Dockerfile           # Docker 构建文件
+├── Dockerfile           # Docker 构建文件（多架构：amd64 / arm64）
+├── .dockerignore
+├── .github/
+│   └── workflows/
+│       └── docker-build.yml  # 自动构建并推送镜像到 ghcr.io
 ├── templates/
 │   └── index.html       # Web 界面
 ├── static/
